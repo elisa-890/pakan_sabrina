@@ -59,7 +59,7 @@ div.stButton > button[kind="primary"] {{ background-color: {ACCENT}; border-colo
 
 st.markdown(f"""
 <div class="header-bar">
-    <p class="header-title">PREDIKSI TREN PENJUALAN<br>TOKO PAKAN TERNAK</p>
+    <p class="header-title">PREDIKSI TREN PENJUALAN<br>PAKAN TERNAK</p>
     <p class="header-subtitle">Toko Sabrina</p>
 </div>
 """, unsafe_allow_html=True)
