@@ -13,14 +13,12 @@ pengguna secara eksplisit menekan tombol "Latih Ulang Model" di menu
 Pengaturan Lanjutan - bukan otomatis setiap kali dibuka.
 """
 import streamlit as st
-import streamlit as st
-
-import streamlit as st
 
 st.set_page_config(
     page_title="Dashboard Pakan Ternak Toko Sabrina",
     page_icon="app_icon_512.png",
     layout="wide"
+
 
 )
 import pandas as pd
