@@ -15,10 +15,13 @@ Pengaturan Lanjutan - bukan otomatis setiap kali dibuka.
 import streamlit as st
 import streamlit as st
 
+import streamlit as st
+
 st.set_page_config(
-    page_title="Dashboard toko Pakan ternak Sabrina",
-    page_icon="🌾",  # bisa emoji, atau path ke file gambar/logo
+    page_title="Dashboard Toko Pakan Ternak Sabrina",
+    page_icon="app_icon_512.png",
     layout="wide"
+
 )
 import pandas as pd
 import numpy as np
