@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Prediksi Tren Penjualan Pakan Ternak Toko Sabrina</title>
+
+  <!-- PWA manifest: ini yang mengatur nama & ikon saat "Add to Home Screen" -->
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" type="image/png" href="icon-192.png" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+  <meta name="theme-color" content="#0F2A5C" />
+
+  <!-- Dukungan iOS Safari untuk "Add to Home Screen" -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Toko Sabrina" />
+
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #0F2A5C;
+    }
+    #loading {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #0F2A5C;
+      color: white;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      z-index: 10;
+      transition: opacity 0.4s ease;
+    }
+    #loading img {
+      width: 84px;
+      height: 84px;
+      margin-bottom: 16px;
+      border-radius: 20px;
+    }
+    #loading .spinner {
+      width: 28px;
+      height: 28px;
+      border: 3px solid rgba(255,255,255,0.25);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-top: 18px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    iframe {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="loading">
+    <img src="icon-192.png" alt="Logo Toko Sabrina" />
+    <div style="font-weight:600; font-size:16px;">Dashboard Toko Sabrina</div>
+    <div class="spinner"></div>
+  </div>
+
+  <!--
+    GANTI URL DI BAWAH INI dengan URL aplikasi Streamlit kamu yang sebenarnya.
+    Parameter ?embed=true menghilangkan header/menu bawaan Streamlit Cloud.
+  -->
+  <iframe
+    id="app-frame"
+    src="https://pakansabrina-eyrvye97ooschaz9aafqxe.streamlit.app/?embed=true"
+    allow="clipboard-write; geolocation"
+    onload="document.getElementById('loading').style.opacity='0'; setTimeout(()=>{document.getElementById('loading').style.display='none';}, 400);"
+  ></iframe>
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js').catch(() => {});
+      });
+    }
+  </script>
+</body>
+</html>
