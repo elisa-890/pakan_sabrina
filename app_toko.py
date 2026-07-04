@@ -18,7 +18,7 @@ import streamlit as st
 import streamlit as st
 
 st.set_page_config(
-    page_title="Dashboard Toko Pakan Ternak Sabrina",
+    page_title="Dashboard Pakan Ternak Toko Sabrina",
     page_icon="app_icon_512.png",
     layout="wide"
 
