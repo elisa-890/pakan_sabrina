@@ -238,5 +238,5 @@ with tab3:
             except Exception as e:
                 st.error(f"Gagal melatih ulang: {e}")
 
-st.markdown('<div class="app-footer">Sistem Prediksi Tren Penjualan Toko Pakan Ternak &middot; by Elisa</div>',
+st.markdown('<div class="app-footer">Sistem Prediksi Tren Penjualan Pakan Ternak &middot; by Elisa</div>',
             unsafe_allow_html=True)
