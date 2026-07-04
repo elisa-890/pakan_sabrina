@@ -28,8 +28,6 @@ import os
 
 from pipeline import load_final_model, run_full_pipeline, recursive_forecast, FEATURES
 
-st.set_page_config(page_title="Prediksi Tren Penjualan Toko Pakan Ternak", layout="centered", page_icon="📈")
-
 DATA_FILE = "data_penjualan_toko.xlsx"
 MODEL_DIR = "model_final"
 JENIS_PAKAN_LIST = ["Pakan Ayam", "Pakan Babi", "Pakan Bebek"]
