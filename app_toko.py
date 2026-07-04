@@ -13,6 +13,13 @@ pengguna secara eksplisit menekan tombol "Latih Ulang Model" di menu
 Pengaturan Lanjutan - bukan otomatis setiap kali dibuka.
 """
 import streamlit as st
+import streamlit as st
+
+st.set_page_config(
+    page_title="Dashboard toko Pakan ternak Sabrina",
+    page_icon="🌾",  # bisa emoji, atau path ke file gambar/logo
+    layout="wide"
+)
 import pandas as pd
 import numpy as np
 import plotly.graph_objects as go
