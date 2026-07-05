@@ -237,62 +237,70 @@ with tab1:
         st.dataframe(df_hist.tail(15), use_container_width=True)
     else:
         st.info("Belum ada data transaksi tersimpan.")
+        
+    # ---------------------------------------------------------------------
+    # TAB 2 - HASIL PREDIKSI
+    # ---------------------------------------------------------------------
+    with tab2:
+        st.subheader("Prediksi Kebutuhan Pakan Minggu Depan")
 
-# -----------------------------------------------------------------------
-# TAB 2 - HASIL PREDIKSI
-# -----------------------------------------------------------------------
-with tab2:
-    st.subheader("Prediksi Kebutuhan Pakan Minggu Depan")
+        try:
+            loaded = load_final_model(MODEL_DIR)
+            df_feat = loaded["df_feat"]
+            best_model = loaded["best_model"]
+            best_model_name = loaded["best_model_name"]
+            metrics = loaded["metrics"][best_model_name]
 
-    try:
-        model, model_name, metrics = load_final_model(MODEL_DIR)
-        weekly_data = run_full_pipeline(DATA_FILE)
-        pred_next = recursive_forecast(model, weekly_data, FEATURES, n_weeks=1)[0]
+            preds_df = recursive_forecast(
+                best_model, df_feat, n_weeks=1, model_type=best_model_name
+            )
+            pred_next = preds_df["prediksi_kg"].iloc[0]
 
-        colA, colB, colC = st.columns(3)
-        with colA:
-            st.markdown(f"""
-            <div class="metric-card">
-                <div class="label">Prediksi Minggu Depan</div>
-                <div class="value">{pred_next:,.0f} kg</div>
-                <div class="sub">Model: {model_name}</div>
-            </div>""", unsafe_allow_html=True)
-        with colB:
-            st.markdown(f"""
-            <div class="metric-card">
-                <div class="label">MAPE (Akurasi Model)</div>
-                <div class="value">{metrics.get('mape', 0):.1f}%</div>
-                <div class="sub">Semakin rendah semakin akurat</div>
-            </div>""", unsafe_allow_html=True)
-        with colC:
-            st.markdown(f"""
-            <div class="metric-card">
-                <div class="label">RMSE</div>
-                <div class="value">{metrics.get('rmse', 0):,.0f} kg</div>
-                <div class="sub">Rata-rata kesalahan prediksi</div>
-            </div>""", unsafe_allow_html=True)
+            colA, colB, colC = st.columns(3)
+            with colA:
+                st.markdown(f"""
+                <div class="metric-card">
+                    <div class="label">Prediksi Minggu Depan</div>
+                    <div class="value">{pred_next:,.0f} kg</div>
+                    <div class="sub">Model: {best_model_name}</div>
+                </div>""", unsafe_allow_html=True)
+            with colB:
+                st.markdown(f"""
+                <div class="metric-card">
+                    <div class="label">MAPE (Akurasi Model)</div>
+                    <div class="value">{metrics.get('MAPE', 0):.1f}%</div>
+                    <div class="sub">Semakin rendah semakin akurat</div>
+                </div>""", unsafe_allow_html=True)
+            with colC:
+                st.markdown(f"""
+                <div class="metric-card">
+                    <div class="label">RMSE</div>
+                    <div class="value">{metrics.get('RMSE', 0):,.0f} kg</div>
+                    <div class="sub">Rata-rata kesalahan prediksi</div>
+                </div>""", unsafe_allow_html=True)
 
-        st.divider()
-        st.subheader("Tren Penjualan Mingguan")
-        fig = go.Figure()
-        fig.add_trace(go.Scatter(
-            x=weekly_data["minggu"], y=weekly_data["total_kg"],
-            mode="lines+markers", name="Aktual",
-            line=dict(color="#1E4C9A", width=3),
-        ))
-        fig.update_layout(
-            height=380, margin=dict(l=10, r=10, t=30, b=10),
-            plot_bgcolor="white", paper_bgcolor="white",
-        )
-        st.plotly_chart(fig, use_container_width=True)
+            st.divider()
+            st.subheader("Tren Penjualan Mingguan")
+            fig = go.Figure()
+            fig.add_trace(go.Scatter(
+                x=df_feat["minggu"], y=df_feat["total_kg"],
+                mode="lines+markers", name="Aktual",
+                line=dict(color="#1E4C9A", width=3),
+            ))
+            fig.update_layout(
+                height=380, margin=dict(l=10, r=10, t=30, b=10),
+                plot_bgcolor="white", paper_bgcolor="white",
+            )
+            st.plotly_chart(fig, use_container_width=True)
 
-    except Exception as e:
-        st.warning(
-            "Model atau data belum siap. Pastikan file model ada di folder "
-            f"'{MODEL_DIR}' dan data transaksi sudah tersedia."
-        )
-        st.exception(e)
-
+        except Exception as e:
+            st.warning(
+                "Model atau data belum siap. Pastikan folder "
+                f"'{MODEL_DIR}' berisi glm_coef.pkl, xgb_model.pkl, "
+                "metrics.pkl, dan df_feat.csv."
+            )
+            st.exception(e)
+        
 # -----------------------------------------------------------------------
 # TAB 3 - PENGATURAN LANJUTAN
 # -----------------------------------------------------------------------
