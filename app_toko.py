@@ -133,10 +133,6 @@ def inject_custom_css():
             border-radius: 8px 8px 0 0;
             font-weight: 600;
         }
-        # =============================================================================
-# TAMBAHKAN baris CSS ini ke dalam fungsi inject_custom_css() di app_toko.py,
-# taruh di dalam blok <style>...</style> yang sudah ada (sebelum </style>)
-# =============================================================================
 
         /* Sembunyikan badge "Built with Streamlit" di pojok bawah */
         [data-testid="stStatusWidget"] { visibility: hidden; }
