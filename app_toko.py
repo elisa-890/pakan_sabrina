@@ -228,6 +228,8 @@ st.markdown("""
 
 tab1, tab2, tab3 = st.tabs(["📝 Input Transaksi", "📈 Hasil Prediksi", "⚙️ Pengaturan Lanjutan"])
 
+
+        
 # -----------------------------------------------------------------------
 # TAB 1 - INPUT TRANSAKSI
 # -----------------------------------------------------------------------
@@ -276,7 +278,6 @@ with tab1:
         st.dataframe(df_hist.tail(15), use_container_width=True)
     else:
         st.info("Belum ada data transaksi tersimpan.")
-        
     # ---------------------------------------------------------------------
     # TAB 2 - HASIL PREDIKSI
     # ---------------------------------------------------------------------
