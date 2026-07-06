@@ -9,13 +9,13 @@ credentials:
       email: "pemilik@tokosabrina.local"
       first_name: "Pemilik"
       last_name: "Toko Sabrina"
-      password: "gantipassword123"   # tulis password polos di sini, akan di-hash otomatis saat pertama load
+      password: "sabrina123"   # tulis password polos di sini, akan di-hash otomatis saat pertama load
       roles:
         - admin
     karyawan:
       email: "karyawan@tokosabrina.local"
       first_name: "Karyawan"
       last_name: "Toko Sabrina"
-      password: "gantipassword456"
+      password: "karyawan 123"
       roles:
         - staff
