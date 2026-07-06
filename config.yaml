@@ -1,7 +1,7 @@
 cookie:
   name: "toko_sabrina_auth_cookie"
-  key: "xY9!kLm2pQvR8zN4"
-  expiry_days: 100
+  key: "GANTI_DENGAN_STRING_ACAK_RAHASIA_MILIKMU_SENDIRI"
+  expiry_days: 30
 
 credentials:
   usernames:
@@ -9,13 +9,13 @@ credentials:
       email: "pemilik@tokosabrina.local"
       first_name: "Pemilik"
       last_name: "Toko Sabrina"
-      password: "sabrina123"   # tulis password polos di sini, akan di-hash otomatis saat pertama load
+      password: "gantipassword123"   # tulis password polos di sini, akan di-hash otomatis saat pertama load
       roles:
         - admin
     karyawan:
       email: "karyawan@tokosabrina.local"
       first_name: "Karyawan"
       last_name: "Toko Sabrina"
-      password: "karyawan 123"
+      password: "gantipassword456"
       roles:
         - staff
