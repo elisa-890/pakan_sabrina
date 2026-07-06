@@ -1,94 +1,37 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Prediksi Tren Penjualan Pakan Ternak Toko Sabrina</title>
-
-  <!-- PWA manifest: ini yang mengatur nama & ikon saat "Add to Home Screen" -->
-  <link rel="manifest" href="manifest.json" />
-  <link rel="icon" type="image/png" href="icon-192.png" />
-  <link rel="apple-touch-icon" href="apple-touch-icon.png" />
-  <meta name="theme-color" content="#0F2A5C" />
-
-  <!-- Dukungan iOS Safari untuk "Add to Home Screen" -->
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="Toko Sabrina" />
-
-  <style>
-    html, body {
-      margin: 0;
-      padding: 0;
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-      background: #0F2A5C;
-    }
-    #loading {
-      position: fixed;
-      inset: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      background: #0F2A5C;
-      color: white;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      z-index: 10;
-      transition: opacity 0.4s ease;
-    }
-    #loading img {
-      width: 84px;
-      height: 84px;
-      margin-bottom: 16px;
-      border-radius: 20px;
-    }
-    #loading .spinner {
-      width: 28px;
-      height: 28px;
-      border: 3px solid rgba(255,255,255,0.25);
-      border-top-color: white;
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-      margin-top: 18px;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    iframe {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      border: none;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prediksi Tren Penjualan Pakan Ternak Toko Sabrina</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="theme-color" content="#1E3A8A">
+<style>
+  html, body {
+    margin: 0; padding: 0; height: 100%;
+    background: linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Segoe UI', Arial, sans-serif; text-align: center;
+  }
+  .box { color: #fff; padding: 20px; }
+  .box img { width: 96px; height: 96px; border-radius: 22px; box-shadow: 0 8px 24px rgba(0,0,0,0.25); }
+  .box h1 { font-size: 19px; margin: 20px 0 6px 0; line-height: 1.35; }
+  .box p { font-size: 13px; color: #cfe0ff; margin-bottom: 26px; }
+  .btn {
+    display: inline-block; background: #fff; color: #1E3A8A;
+    padding: 14px 36px; border-radius: 8px; text-decoration: none;
+    font-weight: 700; font-size: 15px;
+  }
+</style>
 </head>
 <body>
-
-  <div id="loading">
-    <img src="icon-192.png" alt="Logo Toko Sabrina" />
-    <div style="font-weight:600; font-size:16px;">Dashboard Toko Sabrina</div>
-    <div class="spinner"></div>
+  <div class="box">
+    <img src="icon-192.png" alt="Logo">
+    <h1>Prediksi Tren Penjualan<br>Pakan Ternak Toko Sabrina</h1>
+    <p>Sistem Prediksi Tren Penjualan Pakan Ternak</p>
+    <a class="btn" href="https://pakansabrina-eyrvye97ooschaz9aafqxe.streamlit.app">Buka Aplikasi</a>
   </div>
-
-  <!--
-    GANTI URL DI BAWAH INI dengan URL aplikasi Streamlit kamu yang sebenarnya.
-    Parameter ?embed=true menghilangkan header/menu bawaan Streamlit Cloud.
-  -->
-  <iframe
-    id="app-frame"
-    src="https://pakansabrina-eyrvye97ooschaz9aafqxe.streamlit.app/?embed=true"
-    allow="clipboard-write; geolocation"
-    onload="document.getElementById('loading').style.opacity='0'; setTimeout(()=>{document.getElementById('loading').style.display='none';}, 400);"
-  ></iframe>
-
-  <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js').catch(() => {});
-      });
-    }
-  </script>
 </body>
 </html>
