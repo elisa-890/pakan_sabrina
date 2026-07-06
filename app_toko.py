@@ -18,7 +18,7 @@ import streamlit as st
 # WAJIB PALING ATAS: set_page_config HANYA BOLEH DIPANGGIL SEKALI DI SELURUH FILE
 # =============================================================================
 st.set_page_config(
-    page_title="Dashboard Toko Sabrina",
+    page_title="Dashboard Pakan Sabrina",
     page_icon="app_icon_512.png",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -32,7 +32,7 @@ import numpy as np
 import plotly.graph_objects as go
 import os
 
-from pipeline import load_final_model, run_full_pipeline, recursive_forecast, FEATURES# =============================================================================
+from pipeline import load_final_model, run_full_pipeline, recursive_forecast, FEATURES
 
 DATA_FILE = "data_penjualan_toko.xlsx"
 MODEL_DIR = "model_final"
@@ -189,112 +189,110 @@ st.markdown("""
 
 tab1, tab2, tab3 = st.tabs(["📝 Input Transaksi", "📈 Hasil Prediksi", "⚙️ Pengaturan Lanjutan"])
 
-
-        
 # -----------------------------------------------------------------------
 # TAB 1 - INPUT TRANSAKSI
 # -----------------------------------------------------------------------
-# =============================================================================
-# TAMBAHKAN fungsi ini di app_toko.py, taruh SEBELUM baris "with tab1:"
-# Fungsi ini menormalkan nama kolom supaya tidak pernah pecah jadi
-# kolom duplikat lagi (misal "Nama Produk" vs "nama_produk").
-# =============================================================================
-STANDAR_KOLOM = ["Tanggal", "Jenis Pakan", "Nama Produk", "Jumlah Terjual", "Harga", "Total"]
+with tab1:
+    st.subheader("Tambah Transaksi Baru")
+    st.caption("Isi setiap kali ada penjualan pakan - menggantikan catatan nota manual.")
 
-# Pemetaan varian nama kolom lama -> nama kolom standar yang dipakai sekarang
-PEMETAAN_KOLOM_LAMA = {
-    "tanggal": "Tanggal", "tanggal_transaksi": "Tanggal",
-    "jenis_pakan": "Jenis Pakan",
-    "nama_produk": "Nama Produk",
-    "jumlah_terjual": "Jumlah Terjual", "jumlah_kg": "Jumlah Terjual",
-    "harga": "Harga",
-    "total": "Total",
-}
+    with st.container(border=True):
+        col1, col2 = st.columns(2)
+        with col1:
+            tanggal = st.date_input("Tanggal")
+            jenis_pakan = st.selectbox("Jenis Pakan", JENIS_PAKAN_LIST)
+            nama_produk = st.text_input("Nama Produk", placeholder="contoh: BR1, Gold Coin, 511")
+        with col2:
+            jumlah = st.number_input("Jumlah Terjual", min_value=0.0, step=1.0)
+            satuan = st.selectbox("Satuan", ["kg", "sak", "zak", "bungkus"])
+            harga = st.number_input("Harga per Satuan (Rp)", min_value=0, step=1000)
 
-def normalisasi_data_transaksi(df):
-    """Gabungkan kolom yang mungkin punya variasi nama (huruf besar/kecil,
-    versi lama vs baru) menjadi satu set kolom standar."""
-    df = df.rename(columns=PEMETAAN_KOLOM_LAMA)
+        total_rp = jumlah * harga
+        st.markdown(f"""
+        <div class="metric-card" style="margin-top:10px;">
+            <div class="label">Total Transaksi</div>
+            <div class="value">Rp {total_rp:,.0f}</div>
+        </div>
+        """, unsafe_allow_html=True)
 
-    # Kalau ada kolom standar yang duplikat setelah rename, gabungkan
-    # (ambil nilai yang tidak kosong)
-    for kolom in STANDAR_KOLOM:
-        kolom_terkait = [c for c in df.columns if c == kolom]
-        if len(kolom_terkait) > 1:
-            gabungan = df[kolom_terkait].bfill(axis=1).iloc[:, 0]
-            df = df.drop(columns=kolom_terkait)
-            df[kolom] = gabungan
+        if st.button("💾 Simpan Transaksi", use_container_width=True):
+            new_row = pd.DataFrame([{
+                "Tanggal": tanggal, "Jenis Pakan": jenis_pakan,
+                "Nama Produk": nama_produk, "Jumlah Terjual": f"{jumlah} {satuan}",
+                "Harga": harga, "Total": total_rp,
+            }])
+            if os.path.exists(DATA_FILE):
+                existing = pd.read_excel(DATA_FILE)
+                combined = pd.concat([existing, new_row], ignore_index=True)
+            else:
+                combined = new_row
+            combined.to_excel(DATA_FILE, index=False)
+            st.success("Transaksi berhasil disimpan!")
+            st.rerun()
 
-    # Pastikan semua kolom standar ada, meski kosong
-    for kolom in STANDAR_KOLOM:
-        if kolom not in df.columns:
-            df[kolom] = None
+    st.divider()
+    st.subheader("Riwayat Transaksi Terbaru")
+    if os.path.exists(DATA_FILE):
+        df_hist = pd.read_excel(DATA_FILE)
+        st.dataframe(df_hist.tail(15), use_container_width=True)
+    else:
+        st.info("Belum ada data transaksi tersimpan.")
 
-    return df[STANDAR_KOLOM]
-    
-    # ---------------------------------------------------------------------
-    # TAB 2 - HASIL PREDIKSI
-    # ---------------------------------------------------------------------
-    with tab2:
-        st.subheader("Prediksi Kebutuhan Pakan Minggu Depan")
+# -----------------------------------------------------------------------
+# TAB 2 - HASIL PREDIKSI
+# -----------------------------------------------------------------------
+with tab2:
+    st.subheader("Prediksi Kebutuhan Pakan Minggu Depan")
 
-        try:
-            loaded = load_final_model(MODEL_DIR)
-            df_feat = loaded["df_feat"]
-            best_model = loaded["best_model"]
-            best_model_name = loaded["best_model_name"]
-            metrics = loaded["metrics"][best_model_name]
+    try:
+        model, model_name, metrics = load_final_model(MODEL_DIR)
+        weekly_data = run_full_pipeline(DATA_FILE)
+        pred_next = recursive_forecast(model, weekly_data, FEATURES, n_weeks=1)[0]
 
-            preds_df = recursive_forecast(
-                best_model, df_feat, n_weeks=1, model_type=best_model_name
-            )
-            pred_next = preds_df["prediksi_kg"].iloc[0]
+        colA, colB, colC = st.columns(3)
+        with colA:
+            st.markdown(f"""
+            <div class="metric-card">
+                <div class="label">Prediksi Minggu Depan</div>
+                <div class="value">{pred_next:,.0f} kg</div>
+                <div class="sub">Model: {model_name}</div>
+            </div>""", unsafe_allow_html=True)
+        with colB:
+            st.markdown(f"""
+            <div class="metric-card">
+                <div class="label">MAPE (Akurasi Model)</div>
+                <div class="value">{metrics.get('mape', 0):.1f}%</div>
+                <div class="sub">Semakin rendah semakin akurat</div>
+            </div>""", unsafe_allow_html=True)
+        with colC:
+            st.markdown(f"""
+            <div class="metric-card">
+                <div class="label">RMSE</div>
+                <div class="value">{metrics.get('rmse', 0):,.0f} kg</div>
+                <div class="sub">Rata-rata kesalahan prediksi</div>
+            </div>""", unsafe_allow_html=True)
 
-            colA, colB, colC = st.columns(3)
-            with colA:
-                st.markdown(f"""
-                <div class="metric-card">
-                    <div class="label">Prediksi Minggu Depan</div>
-                    <div class="value">{pred_next:,.0f} kg</div>
-                    <div class="sub">Model: {best_model_name}</div>
-                </div>""", unsafe_allow_html=True)
-            with colB:
-                st.markdown(f"""
-                <div class="metric-card">
-                    <div class="label">MAPE (Akurasi Model)</div>
-                    <div class="value">{metrics.get('MAPE', 0):.1f}%</div>
-                    <div class="sub">Semakin rendah semakin akurat</div>
-                </div>""", unsafe_allow_html=True)
-            with colC:
-                st.markdown(f"""
-                <div class="metric-card">
-                    <div class="label">RMSE</div>
-                    <div class="value">{metrics.get('RMSE', 0):,.0f} kg</div>
-                    <div class="sub">Rata-rata kesalahan prediksi</div>
-                </div>""", unsafe_allow_html=True)
+        st.divider()
+        st.subheader("Tren Penjualan Mingguan")
+        fig = go.Figure()
+        fig.add_trace(go.Scatter(
+            x=weekly_data["minggu"], y=weekly_data["total_kg"],
+            mode="lines+markers", name="Aktual",
+            line=dict(color="#1E4C9A", width=3),
+        ))
+        fig.update_layout(
+            height=380, margin=dict(l=10, r=10, t=30, b=10),
+            plot_bgcolor="white", paper_bgcolor="white",
+        )
+        st.plotly_chart(fig, use_container_width=True)
 
-            st.divider()
-            st.subheader("Tren Penjualan Mingguan")
-            fig = go.Figure()
-            fig.add_trace(go.Scatter(
-                x=df_feat["minggu"], y=df_feat["total_kg"],
-                mode="lines+markers", name="Aktual",
-                line=dict(color="#1E4C9A", width=3),
-            ))
-            fig.update_layout(
-                height=380, margin=dict(l=10, r=10, t=30, b=10),
-                plot_bgcolor="white", paper_bgcolor="white",
-            )
-            st.plotly_chart(fig, use_container_width=True)
+    except Exception as e:
+        st.warning(
+            "Model atau data belum siap. Pastikan file model ada di folder "
+            f"'{MODEL_DIR}' dan data transaksi sudah tersedia."
+        )
+        st.exception(e)
 
-        except Exception as e:
-            st.warning(
-                "Model atau data belum siap. Pastikan folder "
-                f"'{MODEL_DIR}' berisi glm_coef.pkl, xgb_model.pkl, "
-                "metrics.pkl, dan df_feat.csv."
-            )
-            st.exception(e)
-        
 # -----------------------------------------------------------------------
 # TAB 3 - PENGATURAN LANJUTAN
 # -----------------------------------------------------------------------
