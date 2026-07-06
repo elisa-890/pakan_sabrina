@@ -133,6 +133,18 @@ def inject_custom_css():
             border-radius: 8px 8px 0 0;
             font-weight: 600;
         }
+        # =============================================================================
+# TAMBAHKAN baris CSS ini ke dalam fungsi inject_custom_css() di app_toko.py,
+# taruh di dalam blok <style>...</style> yang sudah ada (sebelum </style>)
+# =============================================================================
+
+        /* Sembunyikan badge "Built with Streamlit" di pojok bawah */
+        [data-testid="stStatusWidget"] { visibility: hidden; }
+        div[class*="viewerBadge"] { display: none !important; }
+        .stAppDeployButton { display: none !important; }
+        a[href*="streamlit.io"] { display: none !important; }
+        iframe[title="streamlitApp"] + div { display: none !important; }
+        
     </style>
     """, unsafe_allow_html=True)
 
@@ -188,95 +200,76 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 tab1, tab2, tab3 = st.tabs(["📝 Input Transaksi", "📈 Hasil Prediksi", "⚙️ Pengaturan Lanjutan"])
+    # ---------------------------------------------------------------------
+    # TAB 1 - INPUT TRANSAKSI (kolom rapi: Tanggal Transaksi, Jenis Pakan,
+    # Nama Produk, Jumlah, Harga, Total)
+    # Konversi satuan mengikuti hasil konfirmasi pemilik toko:
+    # 1 sak = 50 kg, 1 zak = 50 kg, 1 karung = 50 kg, 1 bungkus = 1 kg
+    # ---------------------------------------------------------------------
+    KONVERSI_KG = {"kg": 1, "sak": 50, "zak": 50, "karung": 50, "bungkus": 1}
 
+    with tab1:
+        st.subheader("Tambah Transaksi Baru")
+        st.caption("Isi setiap kali ada penjualan pakan - menggantikan catatan nota manual.")
 
-        
-# -----------------------------------------------------------------------
-# TAB 1 - INPUT TRANSAKSI
-# -----------------------------------------------------------------------
-# =============================================================================
-# TAMBAHKAN fungsi ini di app_toko.py, taruh SEBELUM baris "with tab1:"
-# Fungsi ini menormalkan nama kolom supaya tidak pernah pecah jadi
-# kolom duplikat lagi (misal "Nama Produk" vs "nama_produk").
-# =============================================================================
-STANDAR_KOLOM = ["Tanggal", "Jenis Pakan", "Nama Produk", "Jumlah Terjual", "Harga", "Total"]
+        with st.container(border=True):
+            col1, col2 = st.columns(2)
+            with col1:
+                tanggal = st.date_input("Tanggal Transaksi")
+                jenis_pakan = st.selectbox("Jenis Pakan", JENIS_PAKAN_LIST)
+                nama_produk = st.text_input("Nama Produk", placeholder="contoh: BR1, Gold Coin, 511")
+            with col2:
+                jumlah = st.number_input("Jumlah Terjual", min_value=0.0, step=1.0)
+                satuan = st.selectbox("Satuan", ["kg", "sak", "zak", "karung", "bungkus"])
+                harga = st.number_input("Harga per Satuan (Rp)", min_value=0, step=1000)
 
-# Pemetaan varian nama kolom lama -> nama kolom standar yang dipakai sekarang
-PEMETAAN_KOLOM_LAMA = {
-    "tanggal": "Tanggal", "tanggal_transaksi": "Tanggal",
-    "jenis_pakan": "Jenis Pakan",
-    "nama_produk": "Nama Produk",
-    "jumlah_terjual": "Jumlah Terjual", "jumlah_kg": "Jumlah Terjual",
-    "harga": "Harga",
-    "total": "Total",
-}
+            jumlah_kg = jumlah * KONVERSI_KG[satuan]
+            total_rp = jumlah * harga
 
-def normalisasi_data_transaksi(df):
-    """Gabungkan kolom yang mungkin punya variasi nama (huruf besar/kecil,
-    versi lama vs baru) menjadi satu set kolom standar."""
-    df = df.rename(columns=PEMETAAN_KOLOM_LAMA)
+            st.markdown(f"""
+            <div class="metric-card" style="margin-top:10px;">
+                <div class="label">Total Transaksi</div>
+                <div class="value">Rp {total_rp:,.0f}</div>
+                <div class="sub">Setara {jumlah_kg:,.1f} kg</div>
+            </div>
+            """, unsafe_allow_html=True)
 
-    # Kalau ada kolom standar yang duplikat setelah rename, gabungkan
-    # (ambil nilai yang tidak kosong)
-    for kolom in STANDAR_KOLOM:
-        kolom_terkait = [c for c in df.columns if c == kolom]
-        if len(kolom_terkait) > 1:
-            gabungan = df[kolom_terkait].bfill(axis=1).iloc[:, 0]
-            df = df.drop(columns=kolom_terkait)
-            df[kolom] = gabungan
+            if st.button("💾 Simpan Transaksi", use_container_width=True):
+                new_row = pd.DataFrame([{
+                    "Tanggal Transaksi": tanggal,
+                    "Jenis Pakan": jenis_pakan,
+                    "Nama Produk": nama_produk,
+                    "Jumlah": f"{jumlah:g} {satuan}",
+                    "Harga": harga,
+                    "Total": total_rp,
+                }])
+                if os.path.exists(DATA_FILE):
+                    existing = pd.read_excel(DATA_FILE)
+                    combined = pd.concat([existing, new_row], ignore_index=True)
+                else:
+                    combined = new_row
+                # Pastikan urutan & nama kolom selalu konsisten
+                combined = combined.reindex(columns=[
+                    "Tanggal Transaksi", "Jenis Pakan", "Nama Produk",
+                    "Jumlah", "Harga", "Total",
+                ])
+                combined.to_excel(DATA_FILE, index=False)
+                st.success("Transaksi berhasil disimpan!")
+                st.rerun()
 
-    # Pastikan semua kolom standar ada, meski kosong
-    for kolom in STANDAR_KOLOM:
-        if kolom not in df.columns:
-            df[kolom] = None
+        st.divider()
+        st.subheader("Riwayat Transaksi Terbaru")
+        if os.path.exists(DATA_FILE):
+            df_hist = pd.read_excel(DATA_FILE)
+            df_hist = df_hist.reindex(columns=[
+                "Tanggal Transaksi", "Jenis Pakan", "Nama Produk",
+                "Harga", "Jumlah", "Total",
+            ])
+            st.dataframe(df_hist.tail(15), use_container_width=True, hide_index=True)
+        else:
+            st.info("Belum ada data transaksi tersimpan.")
+            
 
-    return df[STANDAR_KOLOM]
-    
-with tab1:
-    st.subheader("Tambah Transaksi Baru")
-    st.caption("Isi setiap kali ada penjualan pakan - menggantikan catatan nota manual.")
-
-    with st.container(border=True):
-        col1, col2 = st.columns(2)
-        with col1:
-            tanggal = st.date_input("Tanggal")
-            jenis_pakan = st.selectbox("Jenis Pakan", JENIS_PAKAN_LIST)
-            nama_produk = st.text_input("Nama Produk", placeholder="contoh: BR1, Gold Coin, 511")
-        with col2:
-            jumlah = st.number_input("Jumlah Terjual", min_value=0.0, step=1.0)
-            satuan = st.selectbox("Satuan", ["kg", "sak", "zak", "bungkus"])
-            harga = st.number_input("Harga per Satuan (Rp)", min_value=0, step=1000)
-
-        total_rp = jumlah * harga
-        st.markdown(f"""
-        <div class="metric-card" style="margin-top:10px;">
-            <div class="label">Total Transaksi</div>
-            <div class="value">Rp {total_rp:,.0f}</div>
-        </div>
-        """, unsafe_allow_html=True)
-
-        if st.button("💾 Simpan Transaksi", use_container_width=True):
-            new_row = pd.DataFrame([{
-                "Tanggal": tanggal, "Jenis Pakan": jenis_pakan,
-                "Nama Produk": nama_produk, "Jumlah Terjual": f"{jumlah} {satuan}",
-                "Harga": harga, "Total": total_rp,
-            }])
-            if os.path.exists(DATA_FILE):
-                existing = pd.read_excel(DATA_FILE)
-                combined = pd.concat([existing, new_row], ignore_index=True)
-            else:
-                combined = new_row
-            combined.to_excel(DATA_FILE, index=False)
-            st.success("Transaksi berhasil disimpan!")
-            st.rerun()
-
-    st.divider()
-    st.subheader("Riwayat Transaksi Terbaru")
-    if os.path.exists(DATA_FILE):
-        df_hist = pd.read_excel(DATA_FILE)
-        st.dataframe(df_hist.tail(15), use_container_width=True)
-    else:
-        st.info("Belum ada data transaksi tersimpan.")
     # ---------------------------------------------------------------------
     # TAB 2 - HASIL PREDIKSI
     # ---------------------------------------------------------------------
