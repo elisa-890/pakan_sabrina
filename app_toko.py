@@ -18,7 +18,7 @@ import streamlit as st
 # WAJIB PALING ATAS: set_page_config HANYA BOLEH DIPANGGIL SEKALI DI SELURUH FILE
 # =============================================================================
 st.set_page_config(
-    page_title="Dashboard Pakan Sabrina",
+    page_title="Toko Sabrina",
     page_icon="app_icon_512.png",
     layout="wide",
     initial_sidebar_state="expanded",
