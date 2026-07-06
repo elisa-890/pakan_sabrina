@@ -170,7 +170,7 @@ if auth_status is False:
 elif auth_status is None:
     st.markdown("""
     <div class="app-banner">
-        <h1>🌾 Dashboard Pakan Sabrina</h1>
+        <h1>🌾 Dashboard Pakan Penjualan Pakan Ternak Toko Sabrina</h1>
         <p>Silakan login untuk mengakses prediksi tren penjualan &amp; input transaksi.</p>
     </div>
     """, unsafe_allow_html=True)
